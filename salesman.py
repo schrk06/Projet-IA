@@ -1,13 +1,18 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Nombre de villes
-NUM_CITIES = 10
+NUM_CITIES =random.randint(5, 50)
 
 # Génération d'une matrice de distances symétrique
 MATRIX = np.random.randint(10, 100, size=(NUM_CITIES, NUM_CITIES))
 np.fill_diagonal(MATRIX, 0)
 MATRIX = (MATRIX + MATRIX.T) // 2  # Rendre la matrice symétrique
+
+# Génération de coordonnées fictives pour la visualisation
+np.random.seed(42)
+city_coords = np.random.rand(NUM_CITIES, 2) * 100
 
 # Calculer la fitness (distance totale du trajet)
 def fitness(route):
@@ -51,7 +56,31 @@ def genetic_algorithm(pop_size=100, generations=500):
     best_route = min(population, key=fitness)
     return best_route, fitness(best_route)
 
+# Fonction pour afficher le chemin trouvé
+def plot_route(route):
+    plt.figure(figsize=(8, 6))
+    for i in range(len(route) - 1):
+        x1, y1 = city_coords[route[i]]
+        x2, y2 = city_coords[route[i + 1]]
+        plt.plot([x1, x2], [y1, y2], 'bo-')
+        distance = MATRIX[route[i], route[i + 1]]
+        plt.text((x1 + x2) / 2, (y1 + y2) / 2, str(distance), fontsize=10, color='blue')
+    
+    # Ajouter la dernière connexion pour fermer le cycle
+    x1, y1 = city_coords[route[-1]]
+    x2, y2 = city_coords[route[0]]
+    plt.plot([x1, x2], [y1, y2], 'bo-')
+    distance = MATRIX[route[-1], route[0]]
+    plt.text((x1 + x2) / 2, (y1 + y2) / 2, str(distance), fontsize=10, color='blue')
+    
+    plt.scatter(city_coords[:, 0], city_coords[:, 1], c='red', marker='o')
+    for i, (x, y) in enumerate(city_coords):
+        plt.text(x, y, str(i), fontsize=12, ha='right')
+    plt.title("Meilleur chemin trouvé avec distances")
+    plt.show()
+
 # Exécuter l'algorithme et afficher le meilleur chemin trouvé
 best_route, best_distance = genetic_algorithm()
-print(f"Meilleur chemin trouve: {best_route}")
+print(f"Meilleur chemin trouvé: {best_route}")
 print(f"Distance totale: {best_distance:.2f}")
+plot_route(best_route)
