@@ -6,7 +6,6 @@ from itertools import permutations
 
 
 
-
 goodint = False
 while not goodint:
     N  = int(input("Enter the number of cities: "))
@@ -19,7 +18,7 @@ while not goodint:
         print("That's not an int!, try again !")
     
 
-M = 10 #It represents the population's dimension
+M = 15 #It represents the population's dimension
 x = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe X
 y = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe Y
 
@@ -39,11 +38,40 @@ def generate_population():
         pop_set.add(chemin)
     return [list(chemin) for chemin in pop_set]
 
-def fitness(chemin):
+def dist_max(chemin):
     """ Calcule la distance totale parcourue pour un chemin donné. """
     xy = np.column_stack((x[chemin], y[chemin]))  # Coordonnées des villes dans l'ordre du chemin
     distance = np.sum(np.sqrt(np.sum((xy - np.roll(xy, -1, axis=0))**2, axis=1)))  
     return distance
+
+
+
+def fitness(population):
+    total_dist = []
+    for i in range (0, len(population)):
+            total_dist.append(dist_max(population[i]))
+            
+    max_cost = max(total_dist)
+    population_fitness = max_cost - total_dist
+    population_fitness_tot = sum(population_fitness)
+    fit = population_fitness / population_fitness_tot
+    return fit
+
+
+
+def selection(population, fit_prob):
+    selected_population=[]
+    fit_cum = np.cumsum(fit_prob)
+    for _ in range(len(population)):
+        r = rd.uniform(0,1)
+        for i, c in enumerate(fit_cum):
+            if (r<=c):
+                selected_population.append(population[i])
+                break
+    return selected_population
+    
+
+
 
 def showmap(villes):
     plt.figure(figsize=(6, 6))
@@ -57,5 +85,8 @@ def showmap(villes):
     plt.title("Représentation des chemins des villes")
     plt.grid(True)
     plt.show() 
-showmap(generate_population())
-    
+
+popo =generate_population()
+pipi = fitness(popo)
+print(pipi)
+print(selection(popo,pipi))
