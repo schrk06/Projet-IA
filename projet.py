@@ -69,6 +69,26 @@ def selection(population, fit_prob):
                 selected_population.append(population[i])
                 break
     return selected_population
+
+
+def crossover(p1, p2):
+    cut = rd.randint(1,N-1)
+    cross1 = p1[0:cut]
+    cross1 += [ville for ville in p2 if ville not in cross1]
+    cross2 = p2[0:cut]
+    cross2+= [ville for ville in p1 if ville not in cross2]
+    return cross1, cross2
+
+def mutation(cross):
+    index1=0
+    index2=0
+    while (index1==index2):
+        index1=rd.randint(0,N-1)
+        index2=rd.randint(0,N-1)
+    temp= cross[index1]
+    cross[index1]=cross[index2]
+    cross[index2]=temp
+    return cross 
     
 
 
