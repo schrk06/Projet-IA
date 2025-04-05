@@ -10,7 +10,7 @@ goodint = False
 while not goodint:
     N  = int(input("Enter the number of cities: "))
     try:
-        if(N > 0):
+        if(N > 3):
             goodint = True
         else:
             print("That's not a valid int, try again !")    
@@ -59,12 +59,12 @@ def fitness(population):
 
 
 
-def selection(population, fit_prob):
-    selected_population=[]
-    """  elite_index = np.argmax(fit_prob)
-         selected_population.insert(0, population[elite_index]) """ #elitism lkan 7bit ( pour assuer que le meilleur chemin est toujours présent dans selected_population)
+def selection(population, fit_prob, elitism_count =1):
+    elite_indices = np.argsort(fit_prob)[-elitism_count:][::-1]
+    elites = [population[i] for i in elite_indices]
+    selected_population = elites.copy()
     fit_cum = np.cumsum(fit_prob)
-    for _ in range(len(population-1)):
+    for _ in range(len(population)-elitism_count):
         r = rd.uniform(0,1)
         for i, c in enumerate(fit_cum):
             if (r<=c):
@@ -91,6 +91,27 @@ def mutation(cross):
     cross[index1]=cross[index2]
     cross[index2]=temp
     return cross 
+
+""" def genetic_algorithm(mutation_prob=0.1) : 
+    
+    population = generate_population()
+    for generation in range(M):
+        fit_prob= population.fitness()
+        selected_population = population(population, fit_prob) 
+        new_population =[]
+        while len(new_population) < N :
+            parent1, parent2 = rd.sample(selected_population, 2)
+            offspring1, offspring2 = crossover(parent1, parent2)
+            p = rd.uniform(0, 1)
+            if p < mutation_prb :
+                offspring1 = mutation(offspring1)
+            if p < mutation_prb :
+                offspring2 = mutation(offspring2)
+            new_population.append(offspring1)
+            new_population.append(offspring2)
+        population = new_population   
+    best_index = np.argmax(fit_prob)
+    return population[best_index], fit_prob[best_index] """  #wsh rayk
     
 
 
@@ -111,4 +132,4 @@ def showmap(villes):
 popo =generate_population()
 pipi = fitness(popo)
 print(pipi)
-print(selection(popo,pipi))
+print(selection(popo,pipi, 4))
