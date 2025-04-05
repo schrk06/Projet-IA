@@ -22,21 +22,32 @@ M = 15 #It represents the population's dimension
 x = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe X
 y = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe Y
 
-"""def generate_population():
-    #Génère aléatoirement une population
-    all_perms = list(permutations(range(0, N )))  # Generate all the permutaions
-    pop_mat = rd.sample(all_perms, min(M, len(all_perms)))  # Select M (or less if len(all_perms)<M) random permutaions
-    return [list(p) for p in pop_mat] """  #trop côuteuse 
 
-def generate_population():
+def generate_population(max_attempts=5):
     """Génère M chemins aléatoires uniques sans calculer toutes les permutations."""
     max_permutations = min(M, factorial(N))  # Empêche d'aller au-delà de N!
-    pop_set = set()
+    attempts = 0
+
+    while attempts < max_attempts:
+        pop_set = set()
+        while len(pop_set) < max_permutations:
+            chemin = tuple(rd.sample(range(N), N))
+            pop_set.add(chemin)
+
+        population = [list(chemin) for chemin in pop_set]
+        fitness_scores = fitness(population)
+        sum_fit = sum(fitness_scores)
+
+        if sum_fit > 0:
+            return population
+        else:
+            attempts += 1
+            print(f"Attempt {attempts}: all paths had the same fitness. Retrying...")
+
+    # Si on arrive ici, toutes les tentatives ont échoué
+    raise Exception(f"All generated paths have the same global distance. Last attempted population: {population}")
+
     
-    while len(pop_set) < max_permutations:
-        chemin = tuple(rd.sample(range(N), N))
-        pop_set.add(chemin)
-    return [list(chemin) for chemin in pop_set]
 
 def dist_max(chemin):
     """ Calcule la distance totale parcourue pour un chemin donné. """
@@ -92,25 +103,37 @@ def mutation(cross):
     cross[index2]=temp
     return cross 
 
-def genetic_algorithm(population, mutation_prob=0.1) : 
-    
+def genetic_algorithm(population, mutation_prob=0.1): 
     for generation in range(M):
-        fit_prob= fitness(population)
-        selected_population = population(population, fit_prob) 
-        new_population =[]
-        while len(new_population) < N :
+        fit_prob = fitness(population)
+        selected_population = selection(population, fit_prob)  # FIXED: call 'selection', not 'population(...)'
+
+        new_population = []
+
+        # Generate new population (maintain size)
+        while len(new_population) < len(population):
+            # Safety check to ensure enough individuals to sample from
+            if len(selected_population) < 2:
+                selected_population = generate_population()
+
             parent1, parent2 = rd.sample(selected_population, 2)
             offspring1, offspring2 = crossover(parent1, parent2)
-            p = rd.uniform(0, 1)
-            if p < mutation_prob :
+
+            # Mutate with probability
+            if rd.random() < mutation_prob:
                 offspring1 = mutation(offspring1)
-            if p < mutation_prob :
+            if rd.random() < mutation_prob:
                 offspring2 = mutation(offspring2)
+
             new_population.append(offspring1)
-            new_population.append(offspring2)
-        population = new_population   
+            if len(new_population) < len(population):
+                new_population.append(offspring2)
+
+        population = new_population
+
+    fit_prob = fitness(population)  # Recalculate fitness for final population
     best_index = np.argmax(fit_prob)
-    return population[best_index], fit_prob[best_index]
+    return population[best_index], fit_prob[best_index], dist_max(population[best_index])
     
 
 
@@ -136,4 +159,6 @@ print(selection(popo,pipi, 4))"""
 pop = generate_population()
 best = genetic_algorithm(pop)
 print(pop)
-print(best)
+print(best[0])
+print(best[1])
+print(best[2])
