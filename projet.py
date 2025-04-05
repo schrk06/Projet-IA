@@ -64,7 +64,7 @@ def selection(population, fit_prob):
     """  elite_index = np.argmax(fit_prob)
          selected_population.insert(0, population[elite_index]) """ #elitism lkan 7bit ( pour assuer que le meilleur chemin est toujours présent dans selected_population)
     fit_cum = np.cumsum(fit_prob)
-    for _ in range(len(population)):
+    for _ in range(len(population-1)):
         r = rd.uniform(0,1)
         for i, c in enumerate(fit_cum):
             if (r<=c):
