@@ -92,26 +92,25 @@ def mutation(cross):
     cross[index2]=temp
     return cross 
 
-""" def genetic_algorithm(mutation_prob=0.1) : 
+def genetic_algorithm(population, mutation_prob=0.1) : 
     
-    population = generate_population()
     for generation in range(M):
-        fit_prob= population.fitness()
+        fit_prob= fitness(population)
         selected_population = population(population, fit_prob) 
         new_population =[]
         while len(new_population) < N :
             parent1, parent2 = rd.sample(selected_population, 2)
             offspring1, offspring2 = crossover(parent1, parent2)
             p = rd.uniform(0, 1)
-            if p < mutation_prb :
+            if p < mutation_prob :
                 offspring1 = mutation(offspring1)
-            if p < mutation_prb :
+            if p < mutation_prob :
                 offspring2 = mutation(offspring2)
             new_population.append(offspring1)
             new_population.append(offspring2)
         population = new_population   
     best_index = np.argmax(fit_prob)
-    return population[best_index], fit_prob[best_index] """  #wsh rayk
+    return population[best_index], fit_prob[best_index]
     
 
 
@@ -129,7 +128,12 @@ def showmap(villes):
     plt.grid(True)
     plt.show() 
 
-popo =generate_population()
+"""popo =generate_population()
 pipi = fitness(popo)
 print(pipi)
-print(selection(popo,pipi, 4))
+print(selection(popo,pipi, 4))"""
+
+pop = generate_population()
+best = genetic_algorithm(pop)
+print(pop)
+print(best)
