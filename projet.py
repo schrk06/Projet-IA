@@ -106,15 +106,15 @@ def mutation(cross):
 def genetic_algorithm(population, mutation_prob=0.1): 
     for generation in range(M):
         fit_prob = fitness(population)
+        if all(f == 0 for f in fit_prob):
+            print("all the generated paths have the same minimum distance, so here's one of the solutions")
+            return population[0],0, dist_max(population[0])
         selected_population = selection(population, fit_prob)  # FIXED: call 'selection', not 'population(...)'
 
         new_population = []
 
         # Generate new population (maintain size)
         while len(new_population) < len(population):
-            # Safety check to ensure enough individuals to sample from
-            if len(selected_population) < 2:
-                selected_population = generate_population()
 
             parent1, parent2 = rd.sample(selected_population, 2)
             offspring1, offspring2 = crossover(parent1, parent2)
