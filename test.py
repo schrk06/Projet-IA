@@ -1,3 +1,3 @@
-import projet
+import tsp_ga
 
-print(projet.fitness(projet.generate_population()))
+tsp_ga.run()
