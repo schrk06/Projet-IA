@@ -7,7 +7,6 @@ from matplotlib.widgets import Button, TextBox
 M = 50  # Taille de la population
 N = 0
 x, y = [], []
-population_ready = False
 
 def dist_max(chemin):
     """xy = np.column_stack((x[chemin], y[chemin]))
@@ -150,7 +149,7 @@ textbox_ax = plt.axes([0.35, 0.05, 0.1, 0.05])
 text_box = TextBox(textbox_ax, 'N = ', initial="5")
 
 def start_random(event):
-    global x, y, N, population_ready
+    global x, y, N
     try:
         N = int(text_box.text)
         if N < 4:
