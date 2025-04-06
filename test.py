@@ -1,3 +1,3 @@
 import projet
 
-print(projet.fitness(projet.generate_population()[0]))
+print(projet.fitness(projet.generate_population()))

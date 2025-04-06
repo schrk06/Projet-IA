@@ -18,7 +18,7 @@ while not goodint:
         print("That's not an int!, try again !")
     
 
-M = 50 #It represents the population's dimension
+M = 50 
 x = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe X
 y = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe Y
 
@@ -198,5 +198,5 @@ def genetic_algorithm(population, mutation_prob=0.15, gen_num=200, elitism_count
     return best_path
 
 
-population = generate_population()
-chemin_ideal = genetic_algorithm(population, mutation_prob=0.1 ,gen_num=300)
+"""population = generate_population()
+chemin_ideal = genetic_algorithm(population, mutation_prob=0.1 ,gen_num=50)"""
