@@ -3,7 +3,6 @@ import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button, TextBox
-from itertools import permutations
 
 M = 50  # Taille de la population
 N = 0
@@ -11,8 +10,17 @@ x, y = [], []
 population_ready = False
 
 def dist_max(chemin):
-    xy = np.column_stack((x[chemin], y[chemin]))
+    """xy = np.column_stack((x[chemin], y[chemin]))
     distance = np.sum(np.sqrt(np.sum((xy - np.roll(xy, -1, axis=0))**2, axis=1)))
+    return distance"""
+    x_vals = x[chemin] 
+    y_vals = y[chemin] 
+    x_vals = np.append(x_vals, x_vals[0])  
+    y_vals = np.append(y_vals, y_vals[0])  
+    dx = np.diff(x_vals)
+    dy = np.diff(y_vals) 
+    diff = np.sqrt(dx**2 + dy**2)
+    distance = np.sum(diff)
     return distance
 
 def fitness(population):
@@ -131,7 +139,7 @@ def genetic_algorithm(population, mutation_prob=0.15, gen_num=200, elitism_count
 
     return best_path
 
-# ===================== Interface Graphique =====================
+# Interface Graphique :
 
 fig, ax = plt.subplots(figsize=(8, 6))
 plt.subplots_adjust(bottom=0.2)
