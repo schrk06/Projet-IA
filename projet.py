@@ -18,7 +18,7 @@ while not goodint:
         print("That's not an int!, try again !")
     
 
-M = 15 #It represents the population's dimension
+M = 50 #It represents the population's dimension
 x = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe X
 y = np.random.uniform(0, 1, N) #coordonné des N villes sur l'axe Y
 
@@ -57,23 +57,29 @@ def dist_max(chemin):
 
 
 
-def fitness(population):
+"""def fitness(population):   #si les distances sont proches les unes des autres, la fitness avoisinera 0, ce qui donnera une mauvaise selection
     total_dist = []
     for i in range (0, len(population)):
             total_dist.append(dist_max(population[i]))
             
     max_cost = max(total_dist)
     population_fitness = max_cost - total_dist
-    population_fitness_tot = sum(population_fitness)
+    population_fitness_tot = sum(population_fitness)      
     fit = population_fitness / population_fitness_tot
-    return fit
+    return fit"""
+def fitness(population):
+    total_dist = np.array([dist_max(path) for path in population])
+    population_fitness = 1 / total_dist
+    population_fitness /= population_fitness.sum()
+    return population_fitness
 
 
 
-def selection(population, fit_prob, elitism_count =1):
+def selection(population, fit_prob, elitism_count=10):
+
     elite_indices = np.argsort(fit_prob)[-elitism_count:][::-1]
     elites = [population[i] for i in elite_indices]
-    selected_population = elites.copy()
+    selected_population = elites.copy()    
     fit_cum = np.cumsum(fit_prob)
     for _ in range(len(population)-elitism_count):
         r = rd.uniform(0,1)
@@ -107,81 +113,82 @@ def mutation(cross):
 def draw_all_edges(x, y):
     for i in range(len(x)):
         for j in range(i + 1, len(x)):
-            plt.plot([x[i], x[j]], [y[i], y[j]], color='lightgray', linewidth=0.5)
+            plt.plot([x[i], x[j]], [y[i], y[j]], color='blue', linewidth=0.5)
 
 
-def genetic_algorithm(population, mutation_prob=0.1, gen_num=200):
+def genetic_algorithm(population, mutation_prob=0.15, gen_num=200, elitism_count=10):
     best_distances = []
     best_path = None
     best_distance = float('inf')
+    best_gen = 0
 
-    plt.ion()  
-    fig = plt.figure(figsize=(8, 6))
+    plt.ion()
+    plt.figure(figsize=(8, 6))
 
     for generation in range(gen_num):
         fit_prob = fitness(population)
-        population = selection(population, fit_prob, elitism_count=1)
+        population = selection(population, fit_prob, elitism_count)
+        elites = population[:elitism_count]
+        next_generation = elites.copy()
 
-        # Crossover
-        next_generation = []
-        for i in range(0, len(population)-1, 2):
-            p1, p2 = population[i], population[i+1]
-            c1, c2 = crossover(p1, p2)
+        for i in range(elitism_count, len(population) - 1, 2):
+            c1, c2 = crossover(population[i], population[i + 1])
             next_generation.extend([c1, c2])
-        if len(population) % 2 != 0:
-            next_generation.append(crossover(population[-1], population[0])[0] )
 
-        # Mutation
-        for i in range(len(next_generation)):
+        if len(population) % 2 != 0:
+            next_generation.append(crossover(population[-1], population[elitism_count])[0])
+
+        for i in range(elitism_count, len(next_generation)):
             if rd.random() < mutation_prob:
                 next_generation[i] = mutation(next_generation[i])
 
         population = next_generation
-
-        # Suivi du meilleur chemin
         distances = [dist_max(p) for p in population]
-        min_index = np.argmin(distances)
-        current_best_distance = distances[min_index]
-        best_distances.append(current_best_distance)
+        min_idx = np.argmin(distances)
+        current_best = distances[min_idx]
 
-        if current_best_distance < best_distance:
-            best_distance = current_best_distance
-            best_path = population[min_index]
+        if current_best < best_distance:
+            best_distance = current_best
+            best_path = population[min_idx]
+            best_gen = generation + 1
 
-        # Mise à jour de l'affichage
+        if best_distances:
+            best_distances.append(min(best_distances[-1], current_best))
+        else:
+            best_distances.append(current_best)
+
+        # Affichage interactif
         plt.clf()
-        draw_all_edges(x, y)  # Graphe complet en gris
-
-        # Tracer le meilleur chemin en rouge
-        path = best_path + [best_path[0]]  # boucler le chemin
-        plt.plot(x[path], y[path], 'o-r', label=f"Génération {generation + 1} | Dist: {current_best_distance:.4f}")
-
+        draw_all_edges(x, y)
+        best_current_path = population[min_idx] + [population[min_idx][0]]
+        plt.plot(x[best_current_path], y[best_current_path], 'o-r', label=f"Génération {generation + 1} | Dist: {current_best:.4f}")
         plt.title("Évolution du meilleur chemin")
         plt.xlabel("x")
         plt.ylabel("y")
         plt.legend()
-        plt.pause(0.05)
+        plt.pause(0.03)
 
-    plt.ioff()  # Fin du mode interactif
+    plt.ioff()
     print("\nMeilleur chemin trouvé :", best_path)
     print("Distance totale :", best_distance)
+    print("Génération :", best_gen)
 
-    # Dernière visualisation figée
+    # Visualisation finale
     plt.figure(figsize=(8, 6))
     draw_all_edges(x, y)
     final_path = best_path + [best_path[0]]
-    plt.plot(x[final_path], y[final_path], 'o-r', label="Chemin optimal final")
-    plt.title("Chemin optimal trouvé par l'algorithme génétique")
+    plt.plot(x[final_path], y[final_path], 'o-r', label=f"Meilleur chemin | Dist: {best_distance:.4f} | Génération: {best_gen}")
+    plt.title("Chemin optimal")
     plt.xlabel("x")
     plt.ylabel("y")
     plt.legend()
     plt.grid(True)
     plt.show()
 
-    # Graphique de l'évolution de la meilleure distance
+    # Évolution de la distance
     plt.figure(figsize=(8, 4))
     plt.plot(best_distances, label="Distance du meilleur chemin")
-    plt.title("Évolution de la meilleure distance")
+    plt.title("Évolution du meilleur global")
     plt.xlabel("Générations")
     plt.ylabel("Distance")
     plt.legend()
@@ -189,5 +196,7 @@ def genetic_algorithm(population, mutation_prob=0.1, gen_num=200):
     plt.show()
 
     return best_path
+
+
 population = generate_population()
-chemin_ideal = genetic_algorithm(population, gen_num=500)
+chemin_ideal = genetic_algorithm(population, mutation_prob=0.1 ,gen_num=300)
