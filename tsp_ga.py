@@ -59,7 +59,7 @@ def generate_population(N):
         pop_set.add(chemin)
     return [list(c) for c in pop_set]
 
-def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=200, elitism_count=10):
+def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=300, elitism_count=10):
     x = np.array(x)
     y = np.array(y)
     population = generate_population(N)
@@ -97,7 +97,7 @@ def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=200, elitism_count=10
             best_path = population[min_idx]
             best_gen = generation + 1
 
-        best_distances.append(min(best_distances[-1], current_best) if best_distances else current_best)
+        best_distances.append(current_best)
 
         plt.clf()
         draw_all_edges(x, y)
@@ -113,6 +113,8 @@ def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=200, elitism_count=10
     print("\nMeilleur chemin trouvé :", best_path)
     print("Distance totale :", best_distance)
     print("Génération :", best_gen)
+    print("Chemin final retourné :", population[min_idx])
+    print("Distance du chemin final :", current_best)
 
     plt.figure(figsize=(8, 6))
     draw_all_edges(x, y)
@@ -134,7 +136,7 @@ def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=200, elitism_count=10
     plt.grid(True)
     plt.show()
 
-    return best_path
+    return best_path, population[min_idx]
 
 def run():
     fig, ax = plt.subplots(figsize=(8, 6))
