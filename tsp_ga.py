@@ -42,8 +42,8 @@ def crossover(p1, p2, N):
     cross2 = p2[0:cut] + [ville for ville in p1 if ville not in p2[0:cut]]
     return cross1, cross2
 
-def mutation(cross, N):
-    i1, i2 = rd.sample(range(N), 2)
+def mutation(cross):
+    i1, i2 = rd.sample(range(len(cross)), 2)
     cross[i1], cross[i2] = cross[i2], cross[i1]
     return cross
 
@@ -85,7 +85,7 @@ def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=300, elitism_count=10
 
         for i in range(elitism_count, len(next_generation)):
             if rd.random() < mutation_prob:
-                next_generation[i] = mutation(next_generation[i], N)
+                next_generation[i] = mutation(next_generation[i])
 
         population = next_generation
         distances = [dist_max(p, x, y) for p in population]
@@ -158,7 +158,7 @@ def run():
             print("Veuillez entrer un entier.")
             return
         
-        # x = np.random.choice(np.linspace(0, 1, 10000), size=N, replace=False) (dans le cas où l'on veut éviter les doublons, mais ça ne sert à rien)
+        # x = np.random.choice(np.linspace(0, 1, 10000),size=N, replace=False)(dans le cas où l'on veut éviter les doublons, mais ça ne sert à rien)
         x = np.random.rand(N)
         y = np.random.rand(N)
         plt.close()
