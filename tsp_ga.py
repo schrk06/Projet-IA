@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button, TextBox
 
-M = 50  # Taille de la population
+M = 150  # Taille de la population
 
 def dist_max(chemin, x, y):
     x_vals = x[chemin]
@@ -50,7 +50,7 @@ def mutation(cross):
 def draw_all_edges(x, y):
     for i in range(len(x)):
         for j in range(i + 1, len(x)):
-            plt.plot([x[i], x[j]], [y[i], y[j]], color='blue', linewidth=0.5)
+            plt.plot([x[i], x[j]], [y[i], y[j]], color='white', linewidth=0.5)
 
 def generate_population(N):
     pop_set = set()
@@ -59,7 +59,7 @@ def generate_population(N):
         pop_set.add(chemin)
     return [list(c) for c in pop_set]
 
-def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=300, elitism_count=10):
+def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=100, elitism_count=10):
     x = np.array(x)
     y = np.array(y)
     population = generate_population(N)
@@ -74,20 +74,41 @@ def genetic_algorithm(x, y, N, mutation_prob=0.15, gen_num=300, elitism_count=10
     for generation in range(gen_num):
         fit_prob = fitness(population, x, y)
         population = selection(population, fit_prob, elitism_count)
+        
         elites = population[:elitism_count]
         next_generation = elites.copy()
 
-        for i in range(elitism_count, len(population) - 1, 2):
-            c1, c2 = crossover(population[i], population[i + 1], N)
-            next_generation.extend([c1, c2])
-        if len(population) % 2 != 0:
-            next_generation.append(crossover(population[-1], population[elitism_count], N)[0])
+        # Étape 1 : Croiser les élites entre elles pour générer des enfants
+        elite_children = []
+        for i in range(elitism_count):
+            for j in range(i + 1, elitism_count):
+                c1, c2 = crossover(elites[i], elites[j], N)
+                elite_children.extend([c1, c2])
+        
+        # On ajoute les enfants des élites à la prochaine génération
+        next_generation.extend(elite_children)
 
+        # Étape 2 : Croiser les non-élites entre eux pour compléter la population
+        non_elites = population[elitism_count:]
+        for i in range(0, len(non_elites) - 1, 2):
+            c1, c2 = crossover(non_elites[i], non_elites[i + 1], N)
+            next_generation.extend([c1, c2])
+        
+        if len(non_elites) % 2 != 0:
+            # Si nombre impair, on croise le dernier avec un elite au hasard
+            last = non_elites[-1]
+            partner = elites[rd.randint(0, elitism_count - 1)]
+            c1, _ = crossover(last, partner, N)
+            next_generation.append(c1)
+
+        # Étape 3 : Mutation sur tous sauf les élites
         for i in range(elitism_count, len(next_generation)):
             if rd.random() < mutation_prob:
                 next_generation[i] = mutation(next_generation[i])
 
-        population = next_generation
+        # On remplace la population par la nouvelle génération
+        population = next_generation[:len(population)]
+
         distances = [dist_max(p, x, y) for p in population]
         min_idx = np.argmin(distances)
         current_best = distances[min_idx]
